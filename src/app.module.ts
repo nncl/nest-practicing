@@ -2,6 +2,8 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { BaseService } from './services/base/base.service';
+import { TokenService } from './services/token/token.service';
 
 @Module({
   imports: [
@@ -10,6 +12,14 @@ import { AppService } from './app.service';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    BaseService,
+    TokenService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard,
+    // },
+  ],
 })
 export class AppModule {}
