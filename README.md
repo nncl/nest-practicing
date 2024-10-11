@@ -1,6 +1,6 @@
 # Structure
 
-![BFF idea](./APP-BFF.png)
+![BFF idea](./app-bff-flow.png)
 
 ## TODO
 
