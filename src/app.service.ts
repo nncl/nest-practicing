@@ -1,29 +1,35 @@
-import { HttpService } from '@nestjs/axios';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { firstValueFrom, map } from 'rxjs';
+import { BaseService } from './services/base/base.service';
 
-export type User = { name: string };
+const URL_API = 'https://randomuser.me/api/';
+
+interface User {
+  name: {
+    first: string;
+  };
+}
+
+interface ApiResponse {
+  results: User[];
+}
 
 @Injectable()
 export class AppService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly baseService: BaseService) {}
   async findAll(): Promise<string[]> {
     const res = await firstValueFrom(
-      this.httpService
-        .get('https://randomuser.me/api/?results=100')
-        .pipe(
-          map((res) => res.data.results.map((user: any) => user.name.first)),
-        ),
+      this.baseService
+        .get<ApiResponse>(`${URL_API}?results=100`)
+        .pipe(map((res) => res.results.map((user: any) => user.name.first))),
     );
 
     return res;
   }
 
   async findOne(id: number) {
-    const {
-      data: { results },
-    } = await firstValueFrom(
-      this.httpService.get('https://randomuser.me/api/?results=100'),
+    const { results } = await firstValueFrom(
+      this.baseService.get<any>(`${URL_API}/?results=100`),
     );
 
     const user = results[id - 1];
