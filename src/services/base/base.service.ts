@@ -18,6 +18,7 @@ export class BaseService {
     this.httpService.axiosRef.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = this.tokenStorageService.getToken();
+        console.log('token', token);
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }

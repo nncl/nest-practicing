@@ -1,6 +1,6 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable() // { scope: Scope.REQUEST }
 export class TokenService {
   private token: string;
 

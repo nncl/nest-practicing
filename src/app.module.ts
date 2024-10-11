@@ -1,7 +1,9 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { TokenInterceptor } from './interceptors/token/token.interceptor';
 import { BaseService } from './services/base/base.service';
 import { TokenService } from './services/token/token.service';
 
@@ -16,6 +18,10 @@ import { TokenService } from './services/token/token.service';
     AppService,
     BaseService,
     TokenService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TokenInterceptor,
+    },
     // {
     //   provide: APP_GUARD,
     //   useClass: AuthGuard,
