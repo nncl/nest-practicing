@@ -20,7 +20,7 @@ export class AppService {
   async findAll(): Promise<string[]> {
     const res = await firstValueFrom(
       this.baseService
-        .get<ApiResponse>(`${URL_API}?results=100`)
+        .get<ApiResponse>(`${URL_API}?results=5000`)
         .pipe(map((res) => res.results.map((user: any) => user.name.first))),
     );
 
