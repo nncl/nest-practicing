@@ -8,7 +8,7 @@
 - [ ] Logging
 - [ ] Throttle
 - [ ] Bugsnag
-- [ ] Cache
+- [x] Cache
 - [ ] Docker
 
 <p align="center">
