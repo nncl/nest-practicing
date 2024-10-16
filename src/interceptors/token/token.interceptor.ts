@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { TokenService } from 'src/services/token/token.service';
+import { TokenService } from '../../services/token/token.service';
 
 @Injectable()
 export class TokenInterceptor implements NestInterceptor {
