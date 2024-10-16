@@ -1,8 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 
-// FIXME
-describe.only(AuthGuard.name, () => {
+describe(AuthGuard.name, () => {
   let authGuard: AuthGuard;
 
   beforeEach(() => {
