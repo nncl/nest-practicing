@@ -2,10 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthGuard } from './guards/auth/auth.guard';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe(AppController.name, () => {
   let appController: AppController;
   let appService: AppService;
+  let cacheManager: Cache;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -18,6 +21,14 @@ describe(AppController.name, () => {
             findOne: jest.fn().mockResolvedValue('user1'),
           },
         },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn(),
+            del: jest.fn(),
+          },
+        },
       ],
     })
       .overrideGuard(AuthGuard)
@@ -26,6 +37,7 @@ describe(AppController.name, () => {
 
     appController = app.get<AppController>(AppController);
     appService = app.get<AppService>(AppService);
+    cacheManager = app.get<Cache>(CACHE_MANAGER);
   });
 
   it('should be defined', () => {
@@ -45,6 +57,16 @@ describe(AppController.name, () => {
       const result = await appController.getUserById({ id: '1' });
       expect(result).toEqual('user1');
       expect(appService.findOne).toHaveBeenCalledWith('1');
+    });
+  });
+
+  describe('Cache', () => {
+    it('should remove cache by key', async () => {
+      const cacheKey = 'users';
+
+      await appController.cleanCache();
+
+      expect(cacheManager.del).toHaveBeenCalledWith(cacheKey);
     });
   });
 });
