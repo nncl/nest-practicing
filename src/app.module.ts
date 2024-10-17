@@ -2,6 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TokenInterceptor } from './interceptors/token/token.interceptor';
@@ -16,6 +17,12 @@ import { TokenService } from './services/token/token.service';
     CacheModule.register({
       ttl: 60 * 1000,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [
