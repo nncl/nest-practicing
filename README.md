@@ -6,7 +6,7 @@
 
 - [ ] Automated testing
 - [ ] Logging
-- [ ] Throttle
+- [x] Throttle
 - [ ] Bugsnag
 - [x] Cache
 - [ ] Docker
