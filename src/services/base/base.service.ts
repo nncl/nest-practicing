@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   AxiosRequestConfig,
   AxiosResponse,
@@ -10,6 +10,8 @@ import { TokenService } from '../token/token.service';
 
 @Injectable()
 export class BaseService {
+  private readonly logger = new Logger(BaseService.name);
+
   constructor(
     private readonly httpService: HttpService,
     private readonly tokenStorageService: TokenService,
@@ -18,10 +20,13 @@ export class BaseService {
     this.httpService.axiosRef.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         const token = this.tokenStorageService.getToken();
-        console.log('token', token);
+
+        this.logger.log('Token', token);
+
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
+
         return config;
       },
       (error) => {
