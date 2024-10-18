@@ -9,12 +9,14 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { AppService } from './app.service';
 import { AuthGuard } from './guards/auth/auth.guard';
+import Bugsnag from '@bugsnag/js';
 
 const CACHE_USERS_KEY = 'users';
 
@@ -38,9 +40,20 @@ export class AppController {
     return this.appService.findOne(params.id);
   }
 
-  @Post('clean-cache')
-  async cleanCache() {
+  @Post('clear-cache')
+  async clearCache() {
     await this.cacheManager.del(CACHE_USERS_KEY);
     return { message: 'Cache cleared successfully' };
+  }
+
+  @Post('error')
+  async sendError(@Query('custom') custom: boolean) {
+    if (custom) {
+      return Bugsnag.notify(new Error('Custom error'), (event) => {
+        event.addMetadata('custom', { key: 'value' });
+      });
+    }
+
+    throw new Error('Unhandled error');
   }
 }

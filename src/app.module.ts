@@ -39,10 +39,6 @@ import { ConfigModule } from '@nestjs/config';
       provide: APP_INTERCEPTOR,
       useClass: TokenInterceptor,
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthGuard,
-    // },
   ],
 })
 export class AppModule {}

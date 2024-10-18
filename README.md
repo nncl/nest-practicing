@@ -7,8 +7,8 @@
 - [x] Automated testing
 - [x] Throttle
 - [x] Cache
-- [ ] Logging
-- [ ] Bugsnag
+- [x] Logging
+- [x] Bugsnag
 - [ ] Docker
 - [ ] Clean Architecture
   - _Repositories, etc._
