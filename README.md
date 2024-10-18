@@ -2,13 +2,13 @@
 
 ![BFF idea](./app-bff-flow.png)
 
-## TODO
+## TO DO
 
-- [ ] Automated testing
-- [ ] Logging
+- [x] Automated testing
 - [x] Throttle
-- [ ] Bugsnag
 - [x] Cache
+- [ ] Logging
+- [ ] Bugsnag
 - [ ] Docker
 
 <p align="center">
