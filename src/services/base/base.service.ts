@@ -21,7 +21,7 @@ export class BaseService {
       (config: InternalAxiosRequestConfig) => {
         const token = this.tokenStorageService.getToken();
 
-        this.logger.log('Token', token);
+        this.logger.log(`Token here: ${token}`);
 
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
