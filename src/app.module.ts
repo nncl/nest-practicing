@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { TokenInterceptor } from './interceptors/token/token.interceptor';
 import { BaseService } from './services/base/base.service';
 import { TokenService } from './services/token/token.service';
+import { LoggerModule } from './modules/logger/logger.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TokenService } from './services/token/token.service';
         limit: 10,
       },
     ]),
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [
