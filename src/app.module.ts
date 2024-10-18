@@ -9,6 +9,7 @@ import { TokenInterceptor } from './interceptors/token/token.interceptor';
 import { BaseService } from './services/base/base.service';
 import { TokenService } from './services/token/token.service';
 import { LoggerModule } from './modules/logger/logger.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -25,6 +26,9 @@ import { LoggerModule } from './modules/logger/logger.module';
       },
     ]),
     LoggerModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [
