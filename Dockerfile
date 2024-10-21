@@ -8,8 +8,14 @@ RUN npm install
 
 COPY . .
 
+# Copy the Google Cloud credentials file into the container
+COPY test.json /usr/src/app/
+
+# Set the GOOGLE_APPLICATION_CREDENTIALS environment variable
+ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/src/app/test.json"
+
 RUN npm run build
 
-CMD node dist/main
-
 EXPOSE 3000
+
+CMD ["npm", "run", "start:prod"]
