@@ -1,9 +1,9 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Cache } from 'cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthGuard } from './guards/auth/auth.guard';
-import { Cache } from 'cache-manager';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe(AppController.name, () => {
   let appController: AppController;
@@ -64,7 +64,7 @@ describe(AppController.name, () => {
     it('should remove cache by key', async () => {
       const cacheKey = 'users';
 
-      await appController.cleanCache();
+      await appController.clearCache();
 
       expect(cacheManager.del).toHaveBeenCalledWith(cacheKey);
     });
