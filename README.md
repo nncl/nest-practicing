@@ -9,7 +9,7 @@
 - [x] Cache
 - [x] Logging
 - [x] Bugsnag
-- [ ] Docker
+- [x] Docker
 - [ ] Clean Architecture
   - _Repositories, etc._
 
