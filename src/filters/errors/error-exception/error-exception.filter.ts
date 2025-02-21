@@ -1,4 +1,3 @@
-import Bugsnag from '@bugsnag/js';
 import {
   ArgumentsHost,
   BadRequestException,
@@ -9,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { Response } from 'express';
+import { ValidationFormatter } from '../../../utils/validation-formatter';
+import { AppException } from '../exceptions/app-exception';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -18,28 +19,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message: string = 'Internal Server Error';
+    let message = 'Internal Server Error';
     let errors: Record<string, string[]> | null = null;
 
-    if (exception instanceof BadRequestException) {
-      const exceptionResponse = exception.getResponse();
-
-      if (
-        typeof exceptionResponse === 'object' &&
-        exceptionResponse !== null &&
-        'message' in exceptionResponse &&
-        Array.isArray(exceptionResponse.message)
-      ) {
-        errors = this.formatValidationErrors(
-          exceptionResponse.message as ValidationError[],
-        );
-        message = 'Validation failed. Check errors field for details.';
-        status = HttpStatus.BAD_REQUEST;
-      } else {
-        message = exception.message;
-        status = exception.getStatus();
-      }
-    } else if (exception instanceof HttpException) {
+    if (
+      exception instanceof AppException ||
+      exception instanceof HttpException
+    ) {
       status = exception.getStatus();
       const responseBody = exception.getResponse();
 
@@ -50,20 +36,27 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         responseBody !== null &&
         'message' in responseBody
       ) {
-        message = Array.isArray(responseBody.message)
-          ? responseBody.message.join(', ')
-          : String(responseBody.message);
+        const messageContent = responseBody.message;
+        message = Array.isArray(messageContent)
+          ? messageContent.join(', ')
+          : String(messageContent);
+
+        if (
+          exception instanceof BadRequestException &&
+          Array.isArray(messageContent)
+        ) {
+          errors = ValidationFormatter.format(
+            messageContent as ValidationError[],
+          );
+          message = 'Validation failed. Check errors field for details.';
+          status = HttpStatus.BAD_REQUEST;
+        }
       } else {
         message = exception.message;
       }
-    } else if (
-      exception instanceof Error &&
-      typeof exception.message === 'string'
-    ) {
+    } else if (exception instanceof Error) {
       message = exception.message;
     }
-
-    Bugsnag.notify(exception as Error);
 
     response.status(status).json({
       statusCode: status,
@@ -72,27 +65,5 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message,
       ...(errors ? { errors } : {}),
     });
-  }
-
-  private formatValidationErrors(
-    validationErrors: ValidationError[],
-  ): Record<string, string[]> {
-    const formattedErrors: Record<string, string[]> = {};
-
-    validationErrors.forEach((error) => {
-      if (!error.property || !error.constraints) {
-        return;
-      }
-
-      if (!formattedErrors[error.property]) {
-        formattedErrors[error.property] = [];
-      }
-
-      Object.values(error.constraints).forEach((msg) => {
-        formattedErrors[error.property].push(msg);
-      });
-    });
-
-    return formattedErrors;
   }
 }

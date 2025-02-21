@@ -54,6 +54,6 @@ export class AppController {
       });
     }
 
-    throw new Error('Unhandled error');
+    throw new AppException('Unhandled error', HttpStatus.BAD_REQUEST);
   }
 }
