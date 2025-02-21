@@ -1,3 +1,4 @@
+import Bugsnag from '@bugsnag/js';
 import {
   CACHE_MANAGER,
   CacheInterceptor,
@@ -6,17 +7,18 @@ import {
 import {
   Controller,
   Get,
+  HttpStatus,
   Inject,
   Param,
   Post,
   Query,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { AppService } from './app.service';
+import { AppException } from './filters/errors/exceptions/app-exception';
 import { AuthGuard } from './guards/auth/auth.guard';
-import Bugsnag from '@bugsnag/js';
 
 const CACHE_USERS_KEY = 'users';
 

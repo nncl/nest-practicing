@@ -10,6 +10,7 @@ import { BaseService } from './services/base/base.service';
 import { TokenService } from './services/token/token.service';
 import { LoggerModule } from './modules/logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
+import { FormModule } from './modules/form/form.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    FormModule,
   ],
   controllers: [AppController],
   providers: [

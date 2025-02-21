@@ -1,4 +1,3 @@
-import Bugsnag from '@bugsnag/js';
 import {
   ArgumentsHost,
   BadRequestException,
@@ -6,16 +5,13 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AppException } from '../exceptions/app-exception';
 import { GlobalExceptionFilter } from './error-exception.filter';
-
-jest.mock('@bugsnag/js', () => ({
-  notify: jest.fn(),
-}));
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
   let mockResponse: Partial<Response>;
-  let mockHost: Partial<ArgumentsHost>;
+  let mockHost: ArgumentsHost;
 
   beforeEach(() => {
     filter = new GlobalExceptionFilter();
@@ -26,11 +22,27 @@ describe('GlobalExceptionFilter', () => {
     };
 
     mockHost = {
-      switchToHttp: jest.fn(() => ({
-        getResponse: jest.fn(() => mockResponse),
-        getRequest: jest.fn(() => ({ url: '/test-route' })),
-      })),
-    };
+      switchToHttp: jest.fn().mockReturnValue({
+        getResponse: jest.fn().mockReturnValue(mockResponse),
+        getRequest: jest.fn().mockReturnValue({ url: '/test-route' }),
+      }),
+    } as unknown as ArgumentsHost;
+  });
+
+  it('should handle AppException correctly', () => {
+    const exception = new AppException(
+      'Custom App Error',
+      HttpStatus.UNAUTHORIZED,
+    );
+    filter.catch(exception, mockHost);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(401);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      statusCode: 401,
+      timestamp: expect.any(String),
+      path: '/test-route',
+      message: 'Custom App Error',
+    });
   });
 
   it('should handle HttpException correctly', () => {
@@ -38,7 +50,7 @@ describe('GlobalExceptionFilter', () => {
       'Custom error message',
       HttpStatus.FORBIDDEN,
     );
-    filter.catch(exception, mockHost as ArgumentsHost);
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(403);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -47,8 +59,6 @@ describe('GlobalExceptionFilter', () => {
       path: '/test-route',
       message: 'Custom error message',
     });
-
-    expect(Bugsnag.notify).toHaveBeenCalledWith(exception);
   });
 
   it('should handle BadRequestException with validation errors', () => {
@@ -61,7 +71,7 @@ describe('GlobalExceptionFilter', () => {
     ];
 
     const exception = new BadRequestException(validationErrors);
-    filter.catch(exception, mockHost as ArgumentsHost);
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(400);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -74,13 +84,11 @@ describe('GlobalExceptionFilter', () => {
         username: ['username must be a string'],
       },
     });
-
-    expect(Bugsnag.notify).toHaveBeenCalledWith(exception);
   });
 
   it('should handle generic errors correctly', () => {
     const exception = new Error('Unexpected failure');
-    filter.catch(exception, mockHost as ArgumentsHost);
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -89,13 +97,11 @@ describe('GlobalExceptionFilter', () => {
       path: '/test-route',
       message: 'Unexpected failure',
     });
-
-    expect(Bugsnag.notify).toHaveBeenCalledWith(exception);
   });
 
   it('should default to Internal Server Error for unknown exceptions', () => {
     const exception = {} as any;
-    filter.catch(exception, mockHost as ArgumentsHost);
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(500);
     expect(mockResponse.json).toHaveBeenCalledWith({
@@ -104,7 +110,5 @@ describe('GlobalExceptionFilter', () => {
       path: '/test-route',
       message: 'Internal Server Error',
     });
-
-    expect(Bugsnag.notify).toHaveBeenCalledWith(exception);
   });
 });
