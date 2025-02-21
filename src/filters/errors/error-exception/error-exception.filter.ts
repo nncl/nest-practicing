@@ -1,11 +1,13 @@
 import Bugsnag from '@bugsnag/js';
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
 import { Response } from 'express';
 
 @Catch()
@@ -17,12 +19,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string = 'Internal Server Error';
+    let errors: Record<string, string[]> | null = null;
 
-    if (exception instanceof HttpException) {
+    if (exception instanceof BadRequestException) {
+      const exceptionResponse = exception.getResponse();
+
+      if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null &&
+        'message' in exceptionResponse &&
+        Array.isArray(exceptionResponse.message)
+      ) {
+        errors = this.formatValidationErrors(
+          exceptionResponse.message as ValidationError[],
+        );
+        message = 'Validation failed. Check errors field for details.';
+        status = HttpStatus.BAD_REQUEST;
+      } else {
+        message = exception.message;
+        status = exception.getStatus();
+      }
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const responseBody = exception.getResponse();
 
-      // Ensure `message` is always a string
       if (typeof responseBody === 'string') {
         message = responseBody;
       } else if (
@@ -36,16 +56,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else {
         message = exception.message;
       }
-    }
-    // Ensure exception is an Error and message is a string
-    else if (
+    } else if (
       exception instanceof Error &&
       typeof exception.message === 'string'
     ) {
       message = exception.message;
     }
 
-    // Log to Bugsnag
     Bugsnag.notify(exception as Error);
 
     response.status(status).json({
@@ -53,6 +70,29 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
+      ...(errors ? { errors } : {}),
     });
+  }
+
+  private formatValidationErrors(
+    validationErrors: ValidationError[],
+  ): Record<string, string[]> {
+    const formattedErrors: Record<string, string[]> = {};
+
+    validationErrors.forEach((error) => {
+      if (!error.property || !error.constraints) {
+        return;
+      }
+
+      if (!formattedErrors[error.property]) {
+        formattedErrors[error.property] = [];
+      }
+
+      Object.values(error.constraints).forEach((msg) => {
+        formattedErrors[error.property].push(msg);
+      });
+    });
+
+    return formattedErrors;
   }
 }
