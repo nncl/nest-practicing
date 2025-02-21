@@ -1,10 +1,12 @@
+import Bugsnag from '@bugsnag/js';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import {
+  GlobalExceptionFilter
+} from './filters/errors/error-exception/error-exception.filter';
 import { MyLoggerService } from './modules/logger/services/my-logger/my-logger.service';
-import Bugsnag from '@bugsnag/js';
-import BugsnagPluginExpress from '@bugsnag/plugin-express';
-import { ErrorExceptionFilter } from './filters/errors/error-exception/error-exception.filter';
-import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,10 +17,10 @@ async function bootstrap() {
 
   const bugsnagApiKey = configService.get<string>('BUGSNAG_API_KEY') ?? '';
 
-  Bugsnag.start({
-    apiKey: bugsnagApiKey,
-    plugins: [BugsnagPluginExpress],
-  });
+  // Bugsnag.start({
+  //   apiKey: bugsnagApiKey,
+  //   plugins: [BugsnagPluginExpress],
+  // });
 
   app.useLogger(app.get(MyLoggerService));
 
@@ -27,7 +29,13 @@ async function bootstrap() {
     app.use(bugsnagMiddleware.requestHandler);
   }
 
-  app.useGlobalFilters(new ErrorExceptionFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors) => new BadRequestException(errors),
+    }),
+  );
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
 
